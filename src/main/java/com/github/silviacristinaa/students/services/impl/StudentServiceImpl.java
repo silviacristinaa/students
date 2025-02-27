@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 @Getter @Setter
 public class StudentServiceImpl implements StudentService {
 
-    private static final String CPF_ALREADY_REGISTERED_IN_THE_SYSTEM = "Cpf already registered in the system";
+    private static final String CPF_ALREADY_REGISTERED_IN_THE_SYSTEM = "CPF already registered in the system";
+    private static final String EMAIL_ALREADY_REGISTERED_IN_THE_SYSTEM = "Email already registered in the system";
     private static final String STUDENT_NOT_FOUND = "Student %s not found";
 
     private final StudentRepository studentRepository;
@@ -56,7 +57,8 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public Student create(StudentRequestDto studentRequestDto) throws ConflictException {
-        findByCpf(studentRequestDto);
+        checkCpfExists(studentRequestDto.getCpf(), null);
+        checkEmailExists(studentRequestDto.getEmail(), null);
 
         Student student = modelMapper.map(studentRequestDto, Student.class);
         String registration = generateRegistration();
@@ -79,7 +81,9 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public void update(Long id, StudentRequestDto studentRequestDto) throws NotFoundException, ConflictException {
         Student student = findById(id);
-        findByCpf(studentRequestDto, id);
+
+        checkCpfExists(studentRequestDto.getCpf(), id);
+        checkEmailExists(studentRequestDto.getEmail(), id);
 
         student.setName(studentRequestDto.getName());
         student.setCpf(studentRequestDto.getCpf());
@@ -102,17 +106,17 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new NotFoundException(String.format(STUDENT_NOT_FOUND, id)));
     }
 
-    private void findByCpf(StudentRequestDto studentRequestDto) throws ConflictException {
-        Optional<Student> student = studentRepository.findByCpf(studentRequestDto.getCpf());
-        if(student.isPresent()) {
+    private void checkCpfExists(String cpf, Long id) throws ConflictException {
+        Optional<Student> student = studentRepository.findByCpf(cpf);
+        if(student.isPresent() && (id == null || !id.equals(student.get().getId()))) {
             throw new ConflictException(CPF_ALREADY_REGISTERED_IN_THE_SYSTEM);
         }
     }
 
-    private void findByCpf(StudentRequestDto studentRequestDto, Long id) throws ConflictException {
-        Optional<Student> student = studentRepository.findByCpf(studentRequestDto.getCpf());
-        if(student.isPresent() && !id.equals(student.get().getId())) {
-            throw new ConflictException(CPF_ALREADY_REGISTERED_IN_THE_SYSTEM);
+    private void checkEmailExists(String email, Long id) throws ConflictException {
+        Optional<Student> student = studentRepository.findByEmail(email);
+        if(student.isPresent() && (id == null || !id.equals(student.get().getId()))) {
+            throw new ConflictException(EMAIL_ALREADY_REGISTERED_IN_THE_SYSTEM);
         }
     }
 
