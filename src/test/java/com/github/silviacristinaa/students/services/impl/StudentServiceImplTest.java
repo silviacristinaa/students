@@ -35,7 +35,7 @@ public class StudentServiceImplTest {
 
     private static final long ID = 1L;
     private static final String NAME = "Test";
-    private static final String CPF = "123.456.789-09";
+    private static final String CPF = "12345678909";
     private static final String EMAIL = "test@gmail.com";
     private static final String REGISTRATION = "20259212";
     private static final int INDEX = 0;
