@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.br.CPF;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +18,7 @@ public class StudentRequestDto {
     @NotBlank
     private String name;
     @NotBlank
+    @CPF(message = "The CPF must be valid")
     private String cpf;
     @NotBlank
     @Email(message = "The email must be valid")
