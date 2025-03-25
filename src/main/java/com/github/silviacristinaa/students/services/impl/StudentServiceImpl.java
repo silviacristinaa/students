@@ -9,7 +9,9 @@ import com.github.silviacristinaa.students.exceptions.NotFoundException;
 import com.github.silviacristinaa.students.repositories.StudentRepository;
 import com.github.silviacristinaa.students.services.StudentService;
 import jakarta.transaction.Transactional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,13 +20,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
+@Getter @Setter
 public class StudentServiceImpl implements StudentService {
 
-    private static final String CPF_ALREADY_REGISTERED_IN_THE_SYSTEM = "Cpf already registered in the system";
+    private static final String CPF_ALREADY_REGISTERED_IN_THE_SYSTEM = "CPF already registered in the system";
+    private static final String EMAIL_ALREADY_REGISTERED_IN_THE_SYSTEM = "Email already registered in the system";
     private static final String STUDENT_NOT_FOUND = "Student %s not found";
 
     private final StudentRepository studentRepository;
@@ -52,8 +57,14 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public Student create(StudentRequestDto studentRequestDto) throws ConflictException {
-        findByCpf(studentRequestDto);
-        return studentRepository.save(modelMapper.map(studentRequestDto, Student.class));
+        checkCpfExists(studentRequestDto.getCpf(), null);
+        checkEmailExists(studentRequestDto.getEmail(), null);
+
+        Student student = modelMapper.map(studentRequestDto, Student.class);
+        String registration = generateRegistration();
+        student.setRegistration(registration);
+
+        return studentRepository.save(student);
     }
 
     @Override
@@ -69,11 +80,16 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public void update(Long id, StudentRequestDto studentRequestDto) throws NotFoundException, ConflictException {
-        findById(id);
-        findByCpf(studentRequestDto, id);
+        Student student = findById(id);
 
-        Student student = modelMapper.map(studentRequestDto, Student.class);
-        student.setId(id);
+        checkCpfExists(studentRequestDto.getCpf(), id);
+        checkEmailExists(studentRequestDto.getEmail(), id);
+
+        student.setName(studentRequestDto.getName());
+        student.setCpf(studentRequestDto.getCpf());
+        student.setEmail(studentRequestDto.getEmail());
+        student.setCourse(studentRequestDto.getCourse());
+        student.setActive(studentRequestDto.isActive());
 
         studentRepository.save(student);
     }
@@ -90,17 +106,21 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new NotFoundException(String.format(STUDENT_NOT_FOUND, id)));
     }
 
-    private void findByCpf(StudentRequestDto studentRequestDto) throws ConflictException {
-        Optional<Student> student = studentRepository.findByCpf(studentRequestDto.getCpf());
-        if(student.isPresent()) {
+    private void checkCpfExists(String cpf, Long id) throws ConflictException {
+        Optional<Student> student = studentRepository.findByCpf(cpf);
+        if(student.isPresent() && (id == null || !id.equals(student.get().getId()))) {
             throw new ConflictException(CPF_ALREADY_REGISTERED_IN_THE_SYSTEM);
         }
     }
 
-    private void findByCpf(StudentRequestDto studentRequestDto, Long id) throws ConflictException {
-        Optional<Student> student = studentRepository.findByCpf(studentRequestDto.getCpf());
-        if(student.isPresent() && !id.equals(student.get().getId())) {
-            throw new ConflictException(CPF_ALREADY_REGISTERED_IN_THE_SYSTEM);
+    private void checkEmailExists(String email, Long id) throws ConflictException {
+        Optional<Student> student = studentRepository.findByEmail(email);
+        if(student.isPresent() && (id == null || !id.equals(student.get().getId()))) {
+            throw new ConflictException(EMAIL_ALREADY_REGISTERED_IN_THE_SYSTEM);
         }
+    }
+
+    private String generateRegistration() {
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 }

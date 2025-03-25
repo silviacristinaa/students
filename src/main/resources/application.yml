@@ -8,10 +8,10 @@ spring:
     name: students
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/student
-    username: silvia
-    password: silvia123
-    driver-Class-Name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL_LOCAL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-Name: org.postgresql.Driver
 
   liquibase:
     enabled: true
