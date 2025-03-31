@@ -14,14 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,15 +34,8 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public Page<StudentResponseDto> findAll(Pageable pageable) {
-        List<StudentResponseDto> response =
-                studentRepository.findAll().stream().map(student -> modelMapper.map(student, StudentResponseDto.class))
-                        .collect(Collectors.toList());
-
-        final int start = (int)pageable.getOffset();
-        final int end = Math.min((start + pageable.getPageSize()), response.size());
-
-        Page<StudentResponseDto> page = new PageImpl<>(response.subList(start, end), pageable, response.size());
-        return page;
+        return studentRepository.findAll(pageable)
+                .map(student -> modelMapper.map(student, StudentResponseDto.class));
     }
 
     @Override
@@ -73,7 +63,6 @@ public class StudentServiceImpl implements StudentService {
         Student student = findById(id);
 
         student.setActive(studentStatusRequestDto.isActive());
-        student.setId(id);
         studentRepository.save(student);
     }
 
@@ -97,8 +86,8 @@ public class StudentServiceImpl implements StudentService {
     @Override
     @Transactional
     public void delete(Long id) throws NotFoundException {
-        findById(id);
-        studentRepository.deleteById(id);
+        Student student = findById(id);
+        studentRepository.delete(student);
     }
 
     private Student findById(Long id) throws NotFoundException {

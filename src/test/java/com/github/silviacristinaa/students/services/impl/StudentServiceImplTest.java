@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -68,7 +69,7 @@ public class StudentServiceImplTest {
 
     @Test
     void whenFindAllReturnStudentResponseDtoPage() {
-        when(studentRepository.findAll()).thenReturn(List.of(student));
+        when(studentRepository.findAll(Mockito.any(Pageable.class))).thenReturn(new PageImpl<>(List.of(student)));
         when(modelMapper.map(Mockito.any(), Mockito.any())).thenReturn(studentResponseDto);
 
         Page<StudentResponseDto> response = studentServiceImpl.findAll(Pageable.ofSize(1));
@@ -109,7 +110,8 @@ public class StudentServiceImplTest {
     void whenTryFindByIdReturnNotFoundException() {
         when(studentRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> studentServiceImpl.findOneStudentById(ID));
+        NotFoundException exception = assertThrows(NotFoundException.class,
+                () -> studentServiceImpl.findOneStudentById(ID));
 
         assertEquals(String.format(STUDENT_NOT_FOUND, ID), exception.getMessage());
     }
@@ -231,7 +233,7 @@ public class StudentServiceImplTest {
 
         studentServiceImpl.delete(ID);
 
-        verify(studentRepository, times(1)).deleteById(anyLong());
+        verify(studentRepository, times(1)).delete(any());
     }
 
     @Test
