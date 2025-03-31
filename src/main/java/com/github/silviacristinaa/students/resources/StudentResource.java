@@ -46,7 +46,8 @@ public class StudentResource {
     @Operation(summary = "Create")
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public ResponseEntity<Void> create(@RequestBody @Valid StudentRequestDto studentRequestDto) throws ConflictException {
+    public ResponseEntity<Void> create(@RequestBody @Valid StudentRequestDto studentRequestDto)
+            throws ConflictException {
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest().path(ID).buildAndExpand(studentService.create(studentRequestDto).getId()).toUri();
         return ResponseEntity.created(uri).build();
@@ -56,7 +57,8 @@ public class StudentResource {
     @PatchMapping(value = ID)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> updateStudentStatus(@PathVariable Long id,
-                                                     @RequestBody StudentStatusRequestDto studentStatusRequestDto) throws NotFoundException {
+                                                    @RequestBody StudentStatusRequestDto studentStatusRequestDto)
+            throws NotFoundException {
         studentService.updateStudentStatus(id, studentStatusRequestDto);
         return ResponseEntity.noContent().build();
     }
@@ -64,7 +66,8 @@ public class StudentResource {
     @Operation(summary = "Update")
     @PutMapping(value = ID)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody @Valid StudentRequestDto studentRequestDto) throws NotFoundException, ConflictException {
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody @Valid StudentRequestDto studentRequestDto)
+            throws NotFoundException, ConflictException {
         studentService.update(id, studentRequestDto);
         return ResponseEntity.noContent().build();
     }
