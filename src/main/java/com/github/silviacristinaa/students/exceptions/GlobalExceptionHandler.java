@@ -32,7 +32,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorMessage> handleMethodArgumentBadRequestException(final MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorMessage> handleMethodArgumentBadRequestException(
+            final MethodArgumentNotValidException ex) {
         logE(ex);
 
         return new ResponseEntity<>(ErrorMessage.builder().message(EXCEPTION_MSG_ARGUMENTS_NOT_VALID)
