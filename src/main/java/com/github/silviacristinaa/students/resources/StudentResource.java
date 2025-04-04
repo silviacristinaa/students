@@ -7,9 +7,12 @@ import com.github.silviacristinaa.students.exceptions.ConflictException;
 import com.github.silviacristinaa.students.exceptions.NotFoundException;
 import com.github.silviacristinaa.students.services.StudentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -30,13 +33,23 @@ public class StudentResource {
     private final StudentService studentService;
 
     @Operation(summary = "Get all")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Paginated students returned successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     @ResponseStatus(value = HttpStatus.OK)
-    public ResponseEntity<Page<StudentResponseDto>> findAll(Pageable pageable) {
+    public ResponseEntity<Page<StudentResponseDto>> findAll(@ParameterObject Pageable pageable) {
         return ResponseEntity.ok(studentService.findAll(pageable));
     }
 
     @Operation(summary = "Get by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Student returned successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Arguments not valid"),
+            @ApiResponse(responseCode = "404", description = "Student not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping(value = ID)
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<StudentResponseDto> findById(@PathVariable Long id) throws NotFoundException {
@@ -44,6 +57,12 @@ public class StudentResource {
     }
 
     @Operation(summary = "Create")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Student created successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Arguments not valid"),
+            @ApiResponse(responseCode = "409", description = "Conflict - CPF or email already registered"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<Void> create(@RequestBody @Valid StudentRequestDto studentRequestDto)
@@ -54,6 +73,12 @@ public class StudentResource {
     }
 
     @Operation(summary = "Patch status")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Student status updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Arguments not valid"),
+            @ApiResponse(responseCode = "404", description = "Student not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PatchMapping(value = ID)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> updateStudentStatus(@PathVariable Long id,
@@ -64,6 +89,13 @@ public class StudentResource {
     }
 
     @Operation(summary = "Update")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Student updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Arguments not valid"),
+            @ApiResponse(responseCode = "404", description = "Student not found"),
+            @ApiResponse(responseCode = "409", description = "Conflict - CPF or email already registered"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PutMapping(value = ID)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody @Valid StudentRequestDto studentRequestDto)
@@ -73,6 +105,12 @@ public class StudentResource {
     }
 
     @Operation(summary = "Delete")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Student deleted successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Arguments not valid"),
+            @ApiResponse(responseCode = "404", description = "Student not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @DeleteMapping(value = ID)
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> delete(@PathVariable Long id) throws NotFoundException {
