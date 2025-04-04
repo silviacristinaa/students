@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.Arrays;
 
@@ -14,7 +15,7 @@ import java.util.Arrays;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final String EXCEPTION_MSG_UNEXPECTED_ERROR = "Unexpected error";
+    private static final String EXCEPTION_MSG_INTERNAL_SERVER_ERROR = "Internal server error";
     private static final String EXCEPTION_MSG_ARGUMENTS_NOT_VALID = "Arguments not valid";
     private static final String CONFLICT = "Conflict";
     private static final String NOT_FOUND_MSG = "Not found";
@@ -26,14 +27,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorMessage> processException(final Exception ex) {
         logE(ex);
 
-        return new ResponseEntity<>(ErrorMessage.builder().message(EXCEPTION_MSG_UNEXPECTED_ERROR)
+        return new ResponseEntity<>(ErrorMessage.builder().message(EXCEPTION_MSG_INTERNAL_SERVER_ERROR)
                 .errors(Arrays.asList(ex.getMessage())).build(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ResponseEntity<ErrorMessage> handleMethodArgumentBadRequestException(
-            final MethodArgumentNotValidException ex) {
+    public ResponseEntity<ErrorMessage> handleMethodArgumentInvalidException(final Exception ex) {
         logE(ex);
 
         return new ResponseEntity<>(ErrorMessage.builder().message(EXCEPTION_MSG_ARGUMENTS_NOT_VALID)
